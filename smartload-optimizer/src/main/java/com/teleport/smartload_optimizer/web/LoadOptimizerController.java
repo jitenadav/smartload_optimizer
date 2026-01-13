@@ -3,6 +3,7 @@ package com.teleport.smartload_optimizer.web;
 import com.teleport.smartload_optimizer.info.OptimizeRequest;
 import com.teleport.smartload_optimizer.info.OptimizeResponse;
 import com.teleport.smartload_optimizer.service.LoadOptimizerService;
+import com.teleport.smartload_optimizer.utils.RequestFingerprint;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +27,7 @@ public class LoadOptimizerController {
     @PostMapping("/optimize")
     public OptimizeResponse optimize(@Valid @RequestBody OptimizeRequest request) {
         OptimizeResponse optimizedPayouts =  optimizerService.optimize(request);
+        LOG.info("Request Cached ID {}", RequestFingerprint.fingerprint(request));
         LOG.info("Optimized Payout {}", optimizedPayouts);
         return optimizedPayouts;
     }

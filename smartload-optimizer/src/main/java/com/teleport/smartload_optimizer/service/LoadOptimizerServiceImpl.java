@@ -1,11 +1,15 @@
 package com.teleport.smartload_optimizer.service;
 
+import com.github.benmanes.caffeine.cache.Cache;
 import com.teleport.smartload_optimizer.info.OptimizeRequest;
 import com.teleport.smartload_optimizer.info.OptimizeResponse;
 import com.teleport.smartload_optimizer.info.OrderDto;
 import com.teleport.smartload_optimizer.info.TruckDto;
+import com.teleport.smartload_optimizer.utils.RequestFingerprint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -20,8 +24,22 @@ public class LoadOptimizerServiceImpl implements  LoadOptimizerService{
     private static final boolean ALLOW_HAZMAT = true;
     private static final boolean HAZMAT_MUST_BE_ALONE = true;
 
+    private final Cache<String, OptimizeResponse> optimizeCache;
+
+    @Autowired
+    public LoadOptimizerServiceImpl(Cache<String, OptimizeResponse> optimizeCache) {
+        this.optimizeCache = optimizeCache;
+    }
+
     @Override
     public OptimizeResponse optimize(OptimizeRequest request) {
+        String key = RequestFingerprint.fingerprint(request);
+
+        return optimizeCache.get(key, k -> computeOptimal(request));
+    }
+
+
+    private OptimizeResponse computeOptimal(OptimizeRequest request) {
         TruckDto truck = request.getTruck();
         List<OrderDto> orders = request.getOrders();
         LOG.info("Truck {}", truck);
