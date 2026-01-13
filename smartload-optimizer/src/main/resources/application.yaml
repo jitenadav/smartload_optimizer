@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: smartload-optimizer
+
+  server:
+    port: 8080
+
+  management:
+    endpoints:
+      web:
+        exposure:
+          include: health,info
